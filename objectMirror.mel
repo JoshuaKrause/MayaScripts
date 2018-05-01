@@ -1,0 +1,91 @@
+proc objectMirror(){
+    
+    // This script deletes the negative X side of a mesh, snaps the center vertices to the axis, and mirrors and merges it.
+    
+    string $selected[] = `ls -sl`;
+    
+    faceSelect;
+    faceDelete;
+    
+    select -r $selected;
+    
+    vertSnap;
+    
+    select -r $selected;
+    
+    polyMirrorFace -ws 1  -direction 1 -mergeMode 0 -ch 1 $selected;
+    polyMergeVertex  -d 0.0001 -am 1 -ch 1 $selected;
+    
+    select -r $selected;
+
+}
+    
+proc faceSelect(){
+    
+    // This proc selects all the faces with a negative X position and stores them in a set.
+    
+    ConvertSelectionToFaces;
+
+    string $faces[] = `filterExpand -ex 1 -sm 34`;
+
+    sets -em -n faceSet;
+
+    for ($face in $faces){ 
+
+        select -r $face;
+
+        float $wPos[] = `xform -q -ws -bb`;
+        float $xpos = ($wPos[0]+$wPos[3])/2;
+    
+        if ($xpos < 0){
+            
+            select -r $face;
+            sets -add faceSet;
+        
+            }    
+    
+        }
+}
+
+proc faceDelete(){
+    
+    // This proc deletes the stored faces and their set.
+
+    select faceSet;
+    delete;
+
+    select -ne faceSet;
+    delete;
+
+    select -cl;
+       
+}
+
+proc vertSnap(){
+    
+    // This proc snaps all the center vertices to the X axis.
+
+    ConvertSelectionToVertices;
+    polySelectConstraint -m 3 -t 1 -w 1;
+
+    string $vertices[]=`ls -sl -fl`;
+
+    for ($each in $vertices){
+
+        float $trans[];
+
+        $trans = `xform -q -t -ws $each`;
+
+        xform -t 0 $trans[1] $trans[2] -ws $each;
+
+        clear $trans;
+        
+        }
+
+    polySelectConstraint -m 0;
+
+}
+
+objectMirror;
+
+

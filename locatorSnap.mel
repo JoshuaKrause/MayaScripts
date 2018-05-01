@@ -1,0 +1,23 @@
+proc locatorSnap(){
+
+int $num = 0;
+
+//ConvertSelectionToVertices;
+
+string $selected[] = `ls -sl -fl`;
+
+for ($verts in $selected){
+    
+      
+    string $loc = "LOC_"+ $num;
+    $num++;
+     
+    spaceLocator -n $loc;
+    select -r $verts;
+    select -add $loc;
+    doCreatePointOnPolyConstraintArgList 1 { "0","0","0","1","","1" };
+           
+}
+}
+
+locatorSnap;

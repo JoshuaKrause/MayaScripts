@@ -1,0 +1,30 @@
+// quick occulusion render
+
+proc quickOcclusion(){
+    
+    string $selected[] = `ls -sl`;
+    
+    setCurrentRenderer mentalRay;
+    setAttr "miDefaultOptions.maxSamples" 2;
+    setAttr "miDefaultOptions.filter" 2;
+    
+    createRenderLayer -mc -n occlusion;
+    editRenderLayerMembers -noRecurse occlusion $selected;
+    
+    shadingNode -asShader -n occulsionShader surfaceShader;
+    
+    createNode -n quickOcclusion mib_amb_occlusion;
+    setAttr "quickOcclusion.samples" 64;
+    
+    connectAttr -f quickOcclusion.outValue occulsionShader.outColor;
+    hookShaderOverride("occlusion","","occulsionShader");
+    
+    showWindow renderViewWindow;
+    
+    renderWindowRender redoPreviousRender renderView;
+    
+    
+}
+
+quickOcclusion;
+
